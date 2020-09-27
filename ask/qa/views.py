@@ -1,8 +1,10 @@
 from django.shortcuts import render, get_object_or_404
-from django.http import HttpResponse, Http404
+from django.http import HttpResponse, HttpResponseRedirect, Http404
 from django.core.paginator import Paginator, EmptyPage
+#from django.views.decorators.http import require_POST
 
 from qa.models import Question, Answer
+from qa.forms import AnswerForm, AskForm
 
 
 def paginate(request, qs):
@@ -27,13 +29,37 @@ def paginate(request, qs):
 def test(request, *args, **kwargs):
     return HttpResponse('OK')
 
+def post_ask(request):
+    if request.method == 'POST':
+        form = AskForm(request.POST)
+        if form.is_valid():
+            question = form.save()
+            url = f'/question/{question.id}'
+            return HttpResponseRedirect(url)
+    else:
+        form = AskForm()
+    
+    return render(request, 'qa/askform.html', {
+        'form': form,
+        }) 
+    
 
 def get_question_by_id(request, id):
+    if request.method == 'POST':
+        form = AnswerForm(id, post=request.POST)
+        if form.is_valid():
+            post = form.save()
+            url = f'/question/{id}'
+            return HttpResponseRedirect(url)
+    else:
+        form = AnswerForm(id)
+       
     question = get_object_or_404(Question, id = id)
     answers = Answer.objects.filter(question=question)
     return render(request, 'qa/question.html', {
         'question': question,
         'answers': answers,
+        'form' : form, 
         })
 
 
@@ -56,4 +82,6 @@ def popular_question_list(request):
         'paginator': paginator,
         'page': page,
         }) 
+
+
 

@@ -13,6 +13,12 @@
 			<p>{{ans.text}}</p>
 		{% endfor %}
 		</div>
+	<form action="/question/{{question.id}}/" method="post">
+   		 {% csrf_token %}
+   		 {{ form.as_p }}
+    		<input type="submit" value="Submit">
+	</form>
+
 	</body>
 </html>
 
