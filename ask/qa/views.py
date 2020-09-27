@@ -34,7 +34,7 @@ def post_ask(request):
         form = AskForm(request.POST)
         if form.is_valid():
             question = form.save()
-            url = f'/question/{question.id}'
+            url = '/question/{id}'.format(id=question.id)
             return HttpResponseRedirect(url)
     else:
         form = AskForm()
@@ -49,7 +49,7 @@ def get_question_by_id(request, id):
         form = AnswerForm(id, post=request.POST)
         if form.is_valid():
             post = form.save()
-            url = f'/question/{id}'
+            url = '/question/{id}'.format(id=id)
             return HttpResponseRedirect(url)
     else:
         form = AnswerForm(id)
