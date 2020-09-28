@@ -5,22 +5,13 @@ from qa.models import Question, Answer
 
 class AnswerForm(forms.Form):
     text = forms.CharField(widget=forms.Textarea)
+    question_id = forms.IntegerField(widget=forms.HiddenInput, required=False)
     
-    def __init__(self, question_id, post=None):
-        self.question = Question.objects.get(id=question_id)
-        super(AnswerForm, self).__init__(post) 
-      
     def clean(self):
         return self.cleaned_data
-      
-    def clean_question(self):
-        question = self.cleaned_data['question']
-        if not question:
-            raise ModelForm.ValidationError
-        return question         
     
-    def save(self):
-        answer = Answer(question=self.question, text=self.cleaned_data['text'])
+    def save(self, id):
+        answer = Answer(question_id=id, text=self.cleaned_data['text'])
         answer.save()
         return answer
 

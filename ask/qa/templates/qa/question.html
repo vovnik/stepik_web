@@ -15,7 +15,7 @@
 		</div>
 	<form action="/question/{{question.id}}/" method="post">
    		 {% csrf_token %}
-   		 {{ form.as_p }}
+   		 {{ form.as_ul }}
     		<input type="submit" value="Submit">
 	</form>
 

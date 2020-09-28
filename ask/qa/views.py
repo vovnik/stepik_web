@@ -46,13 +46,13 @@ def post_ask(request):
 
 def get_question_by_id(request, id):
     if request.method == 'POST':
-        form = AnswerForm(id, post=request.POST)
+        form = AnswerForm(request.POST)
         if form.is_valid():
-            post = form.save()
+            post = form.save(id)
             url = '/question/{id}'.format(id=id)
             return HttpResponseRedirect(url)
     else:
-        form = AnswerForm(id)
+        form = AnswerForm()
        
     question = get_object_or_404(Question, id = id)
     answers = Answer.objects.filter(question=question)
