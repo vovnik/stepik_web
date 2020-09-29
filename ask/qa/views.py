@@ -3,8 +3,23 @@ from django.http import HttpResponse, HttpResponseRedirect, Http404
 from django.core.paginator import Paginator, EmptyPage
 #from django.views.decorators.http import require_POST
 
-from qa.models import Question, Answer
-from qa.forms import AnswerForm, AskForm
+from qa.models import Question, Answer, Session, do_login
+from qa.forms import AnswerForm, AskForm, SignUpForm, LoginForm
+
+from datetime import datetime, timedelta
+
+def get_user_by_ssid(request):
+    try:
+        ssid = request.COOKIES.get('sessionid')
+        session = Session.objects.get(
+            key=ssid,
+            expires__gt=datetime.now(),
+        )
+        user = session.user
+        return user
+    except:
+        raise Exception
+        return None 
 
 
 def paginate(request, qs):
@@ -29,9 +44,44 @@ def paginate(request, qs):
 def test(request, *args, **kwargs):
     return HttpResponse('OK')
 
-def post_ask(request):
+
+def signup(request):
+    if request.method == 'POST':
+        form = SignUpForm(request.POST)
+        if form.is_valid():
+            question = form.save()
+            url = '/'
+            return HttpResponseRedirect(url)
+    else:
+        form = SignUpForm()
+    return render(request, 'qa/signup.html', {
+        'form': form,
+        })
+
+
+def login(request):
+    error = ''
+    if request.method == 'POST':
+        login = request.POST.get('username')
+        password = request.POST.get('password')
+        url = '/'
+        sessid = do_login(login, password)
+        if sessid:
+            response = HttpResponseRedirect(url)
+            response.set_cookie('sessionid', sessid,
+                    httponly=True,
+                    expires=datetime.now()+timedelta(days=5)
+                    )
+            return response 
+        else:
+            error = 'Wrong login/password'
+    form = LoginForm()
+    return render(request, 'qa/login.html', {'error': error, 'form': form})
+
+def post_question(request):
     if request.method == 'POST':
         form = AskForm(request.POST)
+        form._user = get_user_by_ssid(request)
         if form.is_valid():
             question = form.save()
             url = '/question/{id}'.format(id=question.id)
@@ -44,15 +94,17 @@ def post_ask(request):
         }) 
     
 
-def get_question_by_id(request, id):
+def question_by_id(request, id):
     if request.method == 'POST':
         form = AnswerForm(request.POST)
+        form._user = get_user_by_ssid(request)
         if form.is_valid():
             post = form.save(id)
             url = '/question/{id}'.format(id=id)
             return HttpResponseRedirect(url)
     else:
-        form = AnswerForm()
+        form = AnswerForm(initial={'question': id})
+
        
     question = get_object_or_404(Question, id = id)
     answers = Answer.objects.filter(question=question)

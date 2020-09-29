@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="Content-Type"
+		content="text/html; charset=utf-8">
+		<title>Login</title>
+	</head>
+	<body>
+	<h1>Enter your login and password in the form below</h1>
+	<form action="/login/" method="post">
+   		 {% csrf_token %}
+   		 {{ form.as_p }}
+   		 {{ error }} 
+    		<input type="submit" value="Submit">
+	</form>
+	</body>
+</html>
+
